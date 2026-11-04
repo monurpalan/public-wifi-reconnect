@@ -197,7 +197,16 @@ $menu = New-Object System.Windows.Forms.ContextMenuStrip
 [void]$menu.Items.Add("Exit", $null, { $form.Close() })
 $tray.ContextMenuStrip = $menu
 $tray.add_DoubleClick({ Show-Main })
-$form.add_Resize({ if ($form.WindowState -eq "Minimized") { $form.Hide() } })
+$script:TrayHintShown = $false
+$form.add_Resize({
+    if ($form.WindowState -eq "Minimized") {
+        $form.Hide()
+        if (-not $script:TrayHintShown) {
+            $script:TrayHintShown = $true
+            $tray.ShowBalloonTip(3000, "Public WiFi Reconnect", "Still running down here. Double-click this icon to reopen.", "Info")
+        }
+    }
+})
 
 function Set-Status($text, $color, $icon, $info) {
     $lblNet.Text = $text; $lblNet.ForeColor = $color
@@ -333,4 +342,4 @@ $form.add_FormClosing({
     $http.Dispose()
     Write-Log "Closed" "" ""
 })
-[void]$form.ShowDialog()
+[System.Windows.Forms.Application]::Run($form)
